@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+requests
+sentence-transformers
+torch
+faiss-cpu
+openai
+streamlit
+python-dotenv
