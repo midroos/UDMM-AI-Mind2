@@ -5,7 +5,7 @@ from typing import Dict, Any
 from .config import EMBEDDING_MODEL, FAISS_INDEX_PATH, FAISS_META_PATH, LLM_PROVIDER, OPENAI_MODEL, LLAMACPP_SERVER, ENV_ALLOW_LEARN
 from .memory.faiss_rag import FaissRAG
 from .intent.hierarchical import HierarchicalIntentManager
-from .llm import OpenAIModel, LlamaCPPModel, EchoModel
+from .llm import OpenAIModel, LlamaCPPModel, EchoModel, GeminiModel
 
 # بسيط Body + Emotion + Episodic storage
 class BodyModel:
@@ -62,6 +62,8 @@ class UDMMAgent:
             return OpenAIModel(OPENAI_MODEL)
         if provider == "llamacpp":
             return LlamaCPPModel(LLAMACPP_SERVER)
+        if provider == "gemini":
+            return GeminiModel()
         return EchoModel()
 
     def perceive_and_answer(self, user_text: str) -> Dict[str,Any]:

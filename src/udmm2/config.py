@@ -1,5 +1,5 @@
 # config.py - إعدادات مركزية للوكيل
-LLM_PROVIDER = "echo"   # "openai" | "llamacpp" | "echo"
+LLM_PROVIDER = "gemini"   # "openai" | "llamacpp" | "echo" | "gemini"
 OPENAI_MODEL = "gpt-4o-mini"
 LLAMACPP_SERVER = "http://127.0.0.1:8080/completion"
 EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
