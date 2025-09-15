@@ -28,4 +28,24 @@ async def teach(req: Request):
 
 @app.get("/status")
 async def status():
-    return {"body": {"energy": agent.body.energy, "arousal": agent.body.arousal}, "memory_count": len(agent.rag.meta)}
+    return {
+        "body": {"energy": agent.body.energy, "arousal": agent.body.arousal},
+        "memory_count": len(agent.rag.meta),
+        "simulation": agent.simulation.get_current_state()
+    }
+
+@app.post("/simulate")
+async def simulate(req: Request):
+    """
+    يسمح بتشغيل خطوة محاكاة بشكل مباشر لاختبار ديناميكيات UDMM.
+    """
+    try:
+        data = await req.json()
+        user_input = data.get("text", "")
+        action = data.get("action", None)
+        state = agent.simulation.step({"text": user_input}, action=action)
+        return {"state": state}
+    except Exception:
+        # Fallback for empty body
+        state = agent.simulation.step({"text": ""}, action=None)
+        return {"state": state}

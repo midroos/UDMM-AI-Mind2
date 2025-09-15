@@ -6,6 +6,7 @@ from .config import EMBEDDING_MODEL, FAISS_INDEX_PATH, FAISS_META_PATH, LLM_PROV
 from .memory.faiss_rag import FaissRAG
 from .intent.hierarchical import HierarchicalIntentManager
 from .llm import OpenAIModel, LlamaCPPModel, EchoModel, GeminiModel
+from .simulation import UDMM_Complete  # <-- 1. استيراد المحاكاة
 
 # بسيط Body + Emotion + Episodic storage
 class BodyModel:
@@ -55,6 +56,8 @@ class UDMMAgent:
         self.episodic = EpisodicMemory()
         # llm provider
         self.llm = self._init_llm()
+        # <-- 2. إضافة محرك المحاكاة
+        self.simulation = UDMM_Complete()
 
     def _init_llm(self):
         provider = LLM_PROVIDER.lower()
@@ -67,37 +70,61 @@ class UDMMAgent:
         return EchoModel()
 
     def perceive_and_answer(self, user_text: str) -> Dict[str,Any]:
+        # <-- 3. دمج منطق المحاكاة
+        # الخطوة 1: تحديث الحالة الديناميكية بناءً على المدخل
+        sim_state_before = self.simulation.step(
+            sensory_input={"text": user_text},
+            action=None
+        )
+
+        # الخطوة 2: استخراج سياق إدراكي من المحاكاة
+        udmm_context = f"InfoTension={sim_state_before['IT']:.3f}, " \
+                       f"Time={sim_state_before['time']:.3f}, " \
+                       f"Policy={sim_state_before['policy']}"
+
         # 1. RAG contexts
         contexts = self.rag.query(user_text, top_k=4)
         context_text = "\n".join([f"- {c['meta']['text']} -> {c['meta']['answer']} (score={c['score']:.2f})" for c in contexts]) or "لا يوجد سياق ذاكرة ذي صلة."
-        # 2. intent & emotion
+
+        # 2. intent & emotion (يمكن تبسيط هذا الجزء أو إبقائه)
         attractors = {"survival": 0.2, "knowledge": 0.5, "social": 0.2, "self_maintenance": 0.1}
         global_intent = self.intent_mgr.compute_global_intent(attractors)
-        subgoals = self.intent_mgr.decompose(global_intent)
-        precision_gain = self.emotion.compute_precision_gain(self.body)
-        # 3. build prompt (Arabic)
-        prompt = f"""
-أنت وكيل معرفي حسب نموذج UDMM. استجب بالعربية.
+
+        # 3. build prompt (Arabic) with UDMM context
+        prompt = f"""أنت وكيل معرفي حسب نموذج UDMM. استجب بالعربية.
+[UDMM Context: {udmm_context}]
+
 السياق من الذاكرة:
 {context_text}
 
 السؤال: "{user_text}"
 
 قصد الوكيل: {json.dumps(global_intent)}
-أهداف فرعية: {json.dumps(subgoals)}
-حالة الجسد: energy={self.body.energy:.2f}, arousal={self.body.arousal:.2f}
-دقة عاطفية: {precision_gain:.2f}
 
 أجب بإيجاز، واذا لم تعرف فاطلب التعلّم بصيغة: [TEACH_ASSIST: what is the answer to '{user_text}'?]
 """
-        # temperature inversely proportional to precision
-        temp = max(0.0, 0.8 - (precision_gain - 1.0) * 0.4)
+        # Temperature can also be influenced by InfoTension
+        temp = max(0.1, min(0.9, sim_state_before['IT']))
         llm_out = self.llm.chat(prompt, temperature=temp, max_tokens=512)
+
+        # <-- 4. تحديث المحاكاة بالفعل الناتج
+        sim_state_after = self.simulation.step(
+            sensory_input={},
+            action=llm_out
+        )
+
         # record episode
         ep = self.episodic.add(perception=user_text, action={"type": "respond"}, result={"llm_out": llm_out, "contexts": contexts})
         # small energy cost
         self.body.apply_action({"cost": 0.01, "arousal_delta": 0.02})
-        return {"response": llm_out, "contexts": contexts, "intent": global_intent, "subgoals": subgoals, "precision_gain": precision_gain, "episode": ep}
+
+        return {
+            "response": llm_out,
+            "contexts": contexts,
+            "intent": global_intent,
+            "udmm_state": sim_state_after, # <-- 5. إرجاع حالة المحاكاة
+            "episode": ep
+        }
 
     def teach(self, question: str, answer: str):
         if not ENV_ALLOW_LEARN:
