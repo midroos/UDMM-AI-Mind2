@@ -1,4 +1,4 @@
-# 🧠 UDMM Cognitive Agent
+# 🧠 UDMM v4: Dynamic Attractor Architecture
 
 [🇬🇧 English](#-english) | [🇦🇪 العربية](#-arabic)
 
@@ -6,7 +6,29 @@
 
 ## 🇬🇧 English
 
-This project aims to build a Cognitive Agent based on the Unified Dynamic Model of Mind (UDMM). The agent integrates an LLM (like OpenAI or Gemini), a RAG memory (based on FAISS), an Intent Manager, and a dynamic simulation engine into a single framework that reflects UDMM principles.
+This project is a Python implementation of the **UDMM v4 architecture**, a significant evolution of the cognitive agent based on the Unified Dynamic Model of Mind. This version moves beyond simple component integration to a fully dynamic, theoretically-grounded system that models attractor states, hierarchical intentions, and informational tension as first-class computational elements.
+
+### 🔬 Key Architectural Features
+
+1.  **Dynamic Attractor System (`AttractorDynamics`):**
+    -   Models attractors as vectors in a 5-dimensional space: (Ego, Social, Symbolic, Physical, Cultural).
+    -   The attractor state evolves based on external inputs, internal dynamics, inter-attractor coupling, and self-regulating informational tension.
+    -   Uses the Dirichlet distribution to ensure normalized, coherent states.
+
+2.  **Hierarchical Intent Manager (`IntentManager`):**
+    -   Implements a three-level intent hierarchy: (Structural, Self, Symbolic).
+    -   Each level's dynamics are influenced differently by the core attractor state, allowing for complex, multi-layered goal-setting.
+
+3.  **Contextual Prompt Builder (`PromptBuilder`):**
+    -   Constructs a rich prompt for the LLM that includes the current attractor state, the full intent hierarchy, and retrieved memory context.
+    -   Features a basic semantic memory system using `sentence-transformers` for encoding and retrieval.
+
+4.  **Integrated Core (`UDMMCore`):**
+    -   The central class that orchestrates the entire process: calculating tension, updating attractors and intents, retrieving memory, building the prompt, and calling the LLM (currently a placeholder).
+    -   Maintains a detailed history of every time step for analysis and visualization.
+
+5.  **Built-in Visualization:**
+    -   The system can generate plots for the evolution of attractors, intents, and informational tension over time, providing a powerful tool for diagnostics and understanding the agent's internal state.
 
 ### 📂 Project Structure
 
@@ -14,136 +36,77 @@ This project aims to build a Cognitive Agent based on the Unified Dynamic Model 
 udmm-agent/
 ├── src/udmm2/
 │   ├── api/
-│   │   └── app.py             # FastAPI server exposing the API endpoints
-│   ├── intent/
-│   │   └── hierarchical.py    # Hierarchical Intent Manager
-│   ├── llm/                   # LLM Providers (OpenAI, Gemini, LlamaCPP, Echo)
-│   ├── memory/
-│   │   └── faiss_rag.py       # Semantic RAG memory using FAISS
-│   ├── config.py              # General settings (API keys, model options...)
-│   ├── simulation.py          # UDMM dynamics simulation engine
-│   └── udmm_core.py           # Agent's core - integrates all components
+│   │   └── app.py             # FastAPI server for the v4 agent
+│   └── udmm_v4_core.py        # Contains the entire UDMM v4 architecture
 │
-├── scripts/
-│   ├── index_data.py          # Script to index the knowledge base
-│   └── verify_memory.py       # Script to verify the memory
-│
-├── data/
-│   ├── knowledge_base.json    # The initial knowledge base (JSON)
-│   └── episodic.json          # Episodic Memory
-│
-├── ui_streamlit.py            # Simple UI for interaction (Streamlit)
 ├── requirements.txt           # Required libraries
 └── README.md                  # This file
 ```
 
-### ⚙️ Core Features
-
--   **🔧 Multi-LLM Provider Support:**
-    Supports OpenAI, Gemini, LlamaCPP (local) + an Echo model for testing.
-
--   **🧠 FAISS RAG Memory:**
-    For storing and recalling facts/knowledge taught to the agent, with pre-indexing capabilities.
-
--   **🎯 Hierarchical Intent Manager:**
-    A system to determine the type of question (informational, explanatory, social, existential).
-
--   **⚡ Dynamic Simulation:**
-    Includes a simple simulation engine that models UDMM concepts like InfoTension and Perceptual Time, influencing the agent's behavior.
-
--   **🔗 UDMM Core Integration:**
-    Combines input processing, LLM interpretation, memory interaction, and output generation.
-
--   **🌐 API Interface:**
-    -   `/ask`: To ask questions.
-    -   `/teach`: To add new knowledge to the agent's memory.
-    -   `/status`: To view the current state of the agent and simulation.
-    -   `/simulate`: To directly trigger a simulation step.
-
--   **🖥️ Streamlit UI:**
-    For a simple and visual chat experience.
-
 ### 🚀 Getting Started
 
 1.  **Install Dependencies:**
+    Ensure you have Python 3.9+ and install the required libraries.
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Set API Keys (Optional):**
-    Set the API keys you want to use as environment variables, or modify `src/udmm2/config.py`.
+2.  **Run the Standalone Simulation:**
+    The `udmm_v4_core.py` file can be run directly to simulate a conversation and visualize the results. This is the best way to understand the model's dynamics.
     ```bash
-    export GEMINI_API_KEY="YOUR_KEY"
-    export OPENAI_API_KEY="YOUR_KEY"
+    python src/udmm2/udmm_v4_core.py
     ```
+    This will:
+    -   Run a predefined multi-turn conversation.
+    -   Print the agent's placeholder response at each step.
+    -   Save a visualization of the system's state to `udmm_system_state.png`.
+    -   Save the detailed conversation history to `udmm_history.json`.
 
-3.  **Index the Knowledge Base (Important):**
-    To give the agent an initial memory, run the indexing script.
-    ```bash
-    python scripts/index_data.py
-    ```
-    This command will create the `data/faiss.index` and `data/faiss_meta.json` files.
-
-4.  **Run the API Server:**
+3.  **Run the API Server (Optional):**
+    You can also interact with the UDMM v4 core via a simple FastAPI server.
     ```bash
     uvicorn src.udmm2.api.app:app --reload
     ```
-    You can access the interactive API docs at: `http://127.0.0.1:8000/docs`
-
-5.  **Or run the Streamlit UI:**
+    You can then send requests to the `/ask` endpoint:
     ```bash
-    streamlit run ui_streamlit.py
+    curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d '{"question": "Tell me about attractors."}'
     ```
 
-### 🧪 Experimental UDMM
+### ⚠️ Important Notes
 
-This version is a prototype that implements some UDMM principles:
-
--   **🧲 Attractors:**
-    Simulated through the intent system + weighted values (knowledge, social...).
-
--   **⚡ Dynamic State:**
-    Demonstrated in the cycle: Input → Simulation → LLM → Memory → Interpretation. The simulation state (tension, time) affects the LLM prompt.
-
--   **🔄 Dynamic Learning:**
-    The system can be "taught" new information (`/teach`), which it will store in FAISS for later retrieval.
-
--   **🌀 Semantic Interaction:**
-    The model attempts to connect stored knowledge with the current question (Retrieval Augmented).
-
-### 📊 How to Test?
-
-1.  **Ask the system a question from its memory:**
-    ```bash
-    curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d '{"question": "What is the capital of France?"}'
-    ```
-
-2.  **Teach it something new:**
-    ```bash
-    curl -X POST http://127.0.0.1:8000/teach -H "Content-Type: application/json" -d '{"question": "What is UDMM?", "answer": "A unified dynamic model of the mind."}'
-    ```
-
-3.  **Ask it again:**
-    ```bash
-    curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d '{"question": "What is UDMM?"}'
-    ```
-    It will retrieve what it learned.
-
-### ⚠️ Current Limitations
-
--   Relies on an external LLM (OpenAI/Gemini) and does not yet generate its own knowledge.
--   The attractors, intents, and simulation are still rudimentary.
--   No advanced management of long-term context or complex temporal simulation yet.
--   The Streamlit UI is a basic prototype for experimentation.
+-   **Prototype Architecture:** This implementation is an architectural prototype. The LLM call in `UDMMCore` is currently a placeholder. To make it a fully functional agent, you must replace the `_get_llm_response` method with a call to a real LLM (e.g., OpenAI, Gemini).
+-   **Simplified Dynamics:** The dynamics and coupling matrices in `AttractorDynamics` are initialized with random values for demonstration. For a more advanced implementation, these should be based on a studied model of how these concepts influence each other.
+-   **Basic Memory:** The memory system is a simple list of embeddings. It can be upgraded to use the more robust FAISS indexing from previous versions for better performance.
 
 ---
 
 ## 🇦🇪 العربية
 
-### 🧠 وكيل UDMM الإدراكي
+### 🧠 UDMM v4: معمارية الجاذبات الديناميكية
 
-هذا المشروع يهدف إلى بناء وكيل إدراكي (Cognitive Agent) مستند إلى النموذج الديناميكي الشامل للعقل (UDMM).
-الوكيل يدمج بين LLM (مثل OpenAI أو Gemini) وذاكرة RAG (قائمة على FAISS) ونظام لإدارة النوايا (Intent Manager) ومحرك محاكاة ديناميكي في إطار واحد يعكس مبادئ UDMM.
+هذا المشروع هو تطبيق بلغة بايثون لمعمارية **UDMM v4**، والتي تمثل تطورًا جوهريًا للوكيل الإدراكي المبني على النموذج الديناميكي الشامل للعقل. هذه النسخة تتجاوز فكرة دمج المكونات البسيطة إلى نظام ديناميكي متكامل ومبني على أسس نظرية، حيث ينمذج حالات الجاذبات، النوايا الهرمية، والتوتر المعلوماتي كعناصر حسابية من الدرجة الأولى.
+
+### 🔬 الميزات المعمارية الأساسية
+
+1.  **نظام الجاذبات الديناميكية (`AttractorDynamics`):**
+    -   ينمذج الجاذبات كمتجهات في فضاء خماسي الأبعاد: (الأنا، الاجتماعي، الرمزي، الجسدي، الثقافي).
+    -   تتطور حالة الجاذب بناءً على المدخلات الخارجية، الديناميكيات الداخلية، التزاوج بين الجاذبات، والتوتر المعلوماتي ذاتي التنظيم.
+    -   يستخدم توزيع ديريخليت لضمان حالات طبيعية ومتماسكة.
+
+2.  **مدير النوايا الهرمي (`IntentManager`):**
+    -   يطبق تسلسلًا هرميًا للنوايا من ثلاثة مستويات: (بنيوي، ذاتي، رمزي).
+    -   تتأثر ديناميكيات كل مستوى بشكل مختلف بحالة الجاذب الأساسية، مما يسمح بتحديد أهداف معقدة ومتعددة الطبقات.
+
+3.  **باني الأوامر السياقي (`PromptBuilder`):**
+    -   يبني أمرًا (prompt) غنيًا لـ LLM يتضمن حالة الجاذب الحالية، والتسلسل الهرمي الكامل للنوايا، وسياق الذاكرة المسترجع.
+    -   يتميز بنظام ذاكرة دلالي أساسي يستخدم `sentence-transformers` للترميز والاسترجاع.
+
+4.  **النواة المتكاملة (`UDMMCore`):**
+    -   الفئة المركزية التي تنسق العملية بأكملها: حساب التوتر، تحديث الجاذبات والنوايا، استرجاع الذاكرة، بناء الأمر، واستدعاء LLM (حاليًا كعنصر نائب).
+    -   تحتفظ بتاريخ مفصل لكل خطوة زمنية للتحليل والتصور.
+
+5.  **التصور المدمج (Built-in Visualization):**
+    -   يمكن للنظام إنشاء رسوم بيانية لتطور الجاذبات والنوايا والتوتر المعلوماتي بمرور الوقت، مما يوفر أداة قوية للتشخيص وفهم الحالة الداخلية للوكيل.
 
 ### 📂 هيكل المشروع
 
@@ -151,124 +114,44 @@ This version is a prototype that implements some UDMM principles:
 udmm-agent/
 ├── src/udmm2/
 │   ├── api/
-│   │   └── app.py             # خادم FastAPI - يعرّض واجهات API
-│   ├── intent/
-│   │   └── hierarchical.py    # مدير النوايا (Hierarchical Intent Manager)
-│   ├── llm/                   # مزودو LLM (OpenAI, Gemini, LlamaCPP, Echo)
-│   ├── memory/
-│   │   └── faiss_rag.py       # الذاكرة الدلالية RAG باستخدام FAISS
-│   ├── config.py              # إعدادات عامة (مفاتيح API، خيارات النموذج...)
-│   ├── simulation.py          # محرك محاكاة ديناميكيات UDMM
-│   └── udmm_core.py           # قلب الوكيل - التكامل بين المكونات
+│   │   └── app.py             # خادم FastAPI لوكيل v4
+│   └── udmm_v4_core.py        # يحتوي على معمارية UDMM v4 بأكملها
 │
-├── scripts/
-│   ├── index_data.py          # سكربت لفهرسة قاعدة المعرفة
-│   └── verify_memory.py       # سكربت للتحقق من الذاكرة
-│
-├── data/
-│   ├── knowledge_base.json    # قاعدة المعرفة الأولية (JSON)
-│   └── episodic.json          # الذاكرة العرضية (Episodic Memory)
-│
-├── ui_streamlit.py            # واجهة بسيطة للتفاعل (Streamlit UI)
 ├── requirements.txt           # المكتبات المطلوبة
 └── README.md                  # هذا الملف
 ```
 
-### ⚙️ المزايا الأساسية
-
-- **🔧 تعدد مزودي LLM:**
-  دعم OpenAI و Gemini و LlamaCPP (محلي) + نموذج Echo للتجارب.
-
-- **🧠 ذاكرة FAISS RAG:**
-  لتخزين وتذكر الحقائق/المعارف التي يتم تعليمها للوكيل، مع إمكانية الفهرسة المسبقة.
-
-- **🎯 مدير النوايا (Intents):**
-  نظام هرمي لتحديد نوع السؤال (معلومة/تفسير/اجتماعي/وجودي).
-
-- **⚡ محاكاة ديناميكية (Dynamic Simulation):**
-  يتضمن محرك محاكاة بسيط ينمذج مفاهيم UDMM مثل التوتر المعلوماتي (InfoTension) والزمن الإدراكي، مما يؤثر على سلوك الوكيل.
-
-- **🔗 تكامل UDMM Core:**
-  الجمع بين الإدخال (Input)، التفسير عبر LLM، التفاعل مع الذاكرة، وتوليد المخرجات.
-
-- **🌐 واجهة API:**
-  - `/ask`: لطرح الأسئلة.
-  - `/teach`: لإضافة معرفة جديدة إلى ذاكرة الوكيل.
-  - `/status`: لعرض الحالة الحالية للوكيل والمحاكاة.
-  - `/simulate`: لتشغيل خطوة محاكاة بشكل مباشر.
-
-- **🖥️ واجهة Streamlit:**
-  لتجربة المحادثة بشكل بصري وبسيط.
-
-### 🚀 التشغيل
+### 🚀 خطوات التشغيل
 
 1.  **تثبيت المتطلبات:**
+    تأكد من أن لديك بايثون 3.9+ وقم بتثبيت المكتبات المطلوبة.
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **إعداد المفاتيح (اختياري):**
-    قم بتعيين مفاتيح API التي تريد استخدامها كمتغيرات بيئة، أو قم بتعديل `src/udmm2/config.py`.
+2.  **تشغيل المحاكاة المستقلة:**
+    يمكن تشغيل ملف `udmm_v4_core.py` مباشرة لمحاكاة محادثة وتصور النتائج. هذه هي أفضل طريقة لفهم ديناميكيات النموذج.
     ```bash
-    export GEMINI_API_KEY="YOUR_KEY"
-    export OPENAI_API_KEY="YOUR_KEY"
+    python src/udmm2/udmm_v4_core.py
     ```
+    سيقوم هذا الأمر بما يلي:
+    -   تشغيل محادثة محددة مسبقًا متعددة الأدوار.
+    -   طباعة استجابة الوكيل النائبة في كل خطوة.
+    -   حفظ تصور لحالة النظام في ملف `udmm_system_state.png`.
+    -   حفظ سجل المحادثة المفصل في ملف `udmm_history.json`.
 
-3.  **فهرسة قاعدة المعرفة (مهم):**
-    لإعطاء الوكيل ذاكرة أولية، قم بتشغيل سكربت الفهرسة.
-    ```bash
-    python scripts/index_data.py
-    ```
-    سيقوم هذا الأمر بإنشاء ملفات `data/faiss.index` و `data/faiss_meta.json`.
-
-4.  **تشغيل خادم API:**
+3.  **تشغيل خادم الـ API (اختياري):**
+    يمكنك أيضًا التفاعل مع نواة UDMM v4 عبر خادم FastAPI بسيط.
     ```bash
     uvicorn src.udmm2.api.app:app --reload
     ```
-    سيمكنك الوصول إلى الواجهة التفاعلية للـ API عبر: `http://127.0.0.1:8000/docs`
-
-5.  **أو تشغيل واجهة Streamlit:**
+    بعد ذلك، يمكنك إرسال طلبات إلى نقطة النهاية `/ask`:
     ```bash
-    streamlit run ui_streamlit.py
+    curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d '{"question": "أخبرني عن الجاذبات."}'
     ```
 
-### 🧪 التجريبية (Experimental UDMM)
+### ⚠️ ملاحظات هامة
 
-هذه النسخة تعتبر بروتوتايب (Prototype) يطبق بعض مبادئ UDMM:
-
-- **🧲 الجاذبات (Attractors):**
-  تُحاكى من خلال نظام النوايا + قيم مرجحة (knowledge, social...).
-
-- **⚡ الحالة الديناميكية (Dynamic State):**
-  يظهر عند تفعيل الدورة بين الإدخال → المحاكاة → LLM → الذاكرة → التفسير. حالة المحاكاة (التوتر، الزمن) تؤثر على prompt الـ LLM.
-
-- **🔄 التعلم الديناميكي:**
-  يمكن "تعليم" النظام بمعلومة جديدة (`/teach`)، وسيخزنها في FAISS ليسترجعها لاحقًا.
-
-- **🌀 التفاعل الدلالي:**
-  النموذج يحاول ربط المعرفة المخزنة مع السؤال الحالي (Retrieval Augmented).
-
-### 📊 كيف تختبر؟
-
-1.  **اسأل النظام سؤالاً موجوداً في الذاكرة:**
-    ```bash
-    curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d '{"question": "ما هي عاصمة فرنسا؟"}'
-    ```
-
-2.  **علمه شيئًا جديدًا:**
-    ```bash
-    curl -X POST http://127.0.0.1:8000/teach -H "Content-Type: application/json" -d '{"question": "ما هو UDMM؟", "answer": "نموذج ديناميكي شامل للعقل."}'
-    ```
-
-3.  **أعد سؤاله:**
-    ```bash
-    curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d '{"question": "ما هو UDMM؟"}'
-    ```
-    سيسترجع ما تعلمه منك.
-
-### ⚠️ حدود النسخة الحالية
-
--   تعتمد على LLM خارجي (OpenAI/Gemini) ولا تولد معرفة ذاتية بعد.
--   الجاذبات والنوايا والمحاكاة ما زالت أولية (rudimentary).
--   لا توجد حتى الآن إدارة متقدمة للسياق الطويل أو المحاكاة الزمنية المعقدة.
--   واجهة Streamlit مجرد نسخة بدائية للتجريب.
+-   **نموذج معماري أولي:** هذا التطبيق هو نموذج معماري أولي. استدعاء LLM في `UDMMCore` هو حاليًا عنصر نائب. لجعله وكيلاً وظيفيًا بالكامل، يجب عليك استبدال دالة `_get_llm_response` باستدعاء لـ LLM حقيقي (مثل OpenAI, Gemini).
+-   **ديناميكيات مبسطة:** تم تهيئة مصفوفات الديناميكيات والتزاوج في `AttractorDynamics` بقيم عشوائية للعرض التوضيحي. لتطبيق أكثر تقدمًا، يجب أن تستند هذه المصفوفات إلى نموذج مدروس لكيفية تأثير هذه المفاهيم على بعضها البعض.
+-   **ذاكرة أساسية:** نظام الذاكرة هو قائمة بسيطة من التضمينات (embeddings). يمكن ترقيته لاستخدام فهرسة FAISS الأكثر قوة من الإصدارات السابقة لتحسين الأداء.
