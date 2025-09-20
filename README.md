@@ -1,4 +1,4 @@
-# 🧠 UDMM v4: Dynamic Attractor Architecture
+# 🧠 UDMM v4: Integrated Dynamic Core
 
 [🇬🇧 English](#-english) | [🇦🇪 العربية](#-arabic)
 
@@ -6,25 +6,23 @@
 
 ## 🇬🇧 English
 
-This project is a Python implementation of the **UDMM v4 architecture**. This version moves beyond simple component integration to a fully dynamic, theoretically-grounded system that models attractor states, hierarchical intentions, and a dynamic memory module as first-class computational elements.
+This project is a Python implementation of the **UDMM v4 architecture**, a self-contained, theoretically-grounded cognitive agent. This version integrates all core components—Dynamic Attractors, a Hierarchical Intent Manager, a Dynamic Memory Module, and an LLM Wrapper—into a single, powerful script.
 
 ### 🔬 Key Architectural Features
 
-1.  **Dynamic Attractor System (`AttractorDynamics`):**
-    -   Models attractors as vectors in a 5-dimensional space.
-    -   The attractor state evolves based on external inputs, internal dynamics, and self-regulating informational tension.
+1.  **Integrated Core (`UDMMCore`):**
+    -   A single class that orchestrates all cognitive functions.
+    -   **Attractor Dynamics:** Models a 5D attractor state (Ego, Social, etc.) that evolves based on inputs and internal tension.
+    -   **Intent Manager:** Manages a three-level hierarchy of goals (Structural, Self, Symbolic).
+    -   **Dynamic Memory:** Implements a `MemoryModule` that restructures its "schemas" based on Informational Tension (IT), allowing it to learn and adapt.
+    -   **LLM Wrapper:** Includes a simple wrapper for LLM calls (OpenAI or a fallback echo) that can be configured via environment variables.
 
-2.  **Hierarchical Intent Manager (`IntentManager`):**
-    -   Implements a three-level intent hierarchy (Structural, Self, Symbolic).
+2.  **Standalone & API-Ready:**
+    -   The entire architecture is contained in `udmm_v4_core.py`, which can be run directly for simulation and testing.
+    -   A pre-configured FastAPI server (`api/app.py`) exposes the core via `/ask` and `/status` endpoints.
 
-3.  **Dynamic Memory Module (`MemoryModule`):**
-    -   A new core component that replaces static memory.
-    -   It calculates Informational Tension (IT) between the agent's prior and posterior beliefs.
-    -   Based on an IT threshold, it either performs a "local update" (refining existing knowledge) or proposes a "restructuring" (creating a new memory schema).
-
-4.  **Integrated Core & UI (`UDMMCore`, `ui_streamlit.py`):**
-    -   A central `UDMMCore` orchestrates all components.
-    -   A Streamlit-based UI allows for easy interaction and visualizes the agent's internal attractor state in real-time.
+3.  **Interactive UI & Visualization:**
+    -   A Streamlit-based UI (`ui_streamlit.py`) provides the primary way to interact with the agent, offering a real-time chat and visualization of the agent's internal state.
 
 ### 📂 Project Structure
 
@@ -32,13 +30,12 @@ This project is a Python implementation of the **UDMM v4 architecture**. This ve
 udmm-agent/
 ├── src/udmm2/
 │   ├── api/
-│   │   └── app.py             # Optional FastAPI server
-│   ├── memory_module.py       # The new Dynamic Memory Module
-│   └── udmm_v4_core.py        # Contains the entire UDMM v4 architecture
+│   │   └── app.py          # Optional FastAPI server for the v4 agent
+│   └── udmm_v4_core.py     # The complete, integrated UDMM v4 architecture
 │
-├── ui_streamlit.py            # The main interactive chat UI
-├── requirements.txt           # Required libraries
-└── README.md                  # This file
+├── ui_streamlit.py         # The main interactive chat UI
+├── requirements.txt        # Required libraries
+└── README.md               # This file
 ```
 
 ### 🚀 Getting Started
@@ -48,8 +45,8 @@ udmm-agent/
     pip install -r requirements.txt
     ```
 
-2.  **Run the Interactive Chat UI (Recommended Method):**
-    This is the primary way to interact with the agent and see its dynamic state.
+2.  **Run the Interactive Chat UI (Recommended):**
+    This launches a web-based chat that visualizes the agent's internal state.
     ```bash
     streamlit run ui_streamlit.py
     ```
@@ -57,46 +54,45 @@ udmm-agent/
 ### ⚙️ Other Ways to Run
 
 -   **Standalone Simulation:**
-    To understand the model's core dynamics without a UI, run the core file as a module.
+    To understand the model's core dynamics, run the core file directly as a module.
     ```bash
     python -m src.udmm2.udmm_v4_core
     ```
-    This will save a visualization to `udmm_v4_dynamic_memory_state.png` and a log to `udmm_v4_history.json`.
+    This saves a state visualization to `udmm_v4_state.json`.
 
 -   **API Server (for developers):**
     ```bash
     uvicorn src.udmm2.api.app:app --reload
     ```
+    Interact via `http://127.0.0.1:8000/docs`.
 
 ### ⚠️ Important Notes
--   **Prototype Architecture:** This is an architectural prototype. The LLM call is a placeholder.
--   **Stateful UI:** The Streamlit UI maintains the agent's state for the duration of your session. Closing the tab resets the state.
+-   **LLM Configuration:** To use a real LLM like OpenAI, set the `LLM_PROVIDER` and `OPENAI_API_KEY` environment variables. Otherwise, it will use a simple echo fallback.
+-   **Stateful UI:** The Streamlit UI maintains the agent's state for your session. Closing the tab resets the agent's memory and state.
 
 ---
 
 ## 🇦🇪 العربية
 
-### 🧠 UDMM v4: معمارية الجاذبات الديناميكية
+### 🧠 UDMM v4: النواة الديناميكية المتكاملة
 
-هذا المشروع هو تطبيق لمعمارية **UDMM v4**. هذه النسخة تتجاوز فكرة دمج المكونات البسيطة إلى نظام ديناميكي متكامل ومبني على أسس نظرية، ينمذج حالات الجاذبات، النوايا الهرمية، ووحدة الذاكرة الديناميكية كعناصر حسابية من الدرجة الأولى.
+هذا المشروع هو تطبيق بلغة بايثون لمعمارية **UDMM v4**، وهو وكيل إدراكي متكامل ومبني على أسس نظرية. هذه النسخة تدمج جميع المكونات الأساسية - الجاذبات الديناميكية، مدير النوايا الهرمي، وحدة الذاكرة الديناميكية، ومغلف LLM - في سكربت واحد قوي.
 
 ### 🔬 الميزات المعمارية الأساسية
 
-1.  **نظام الجاذبات الديناميكية (`AttractorDynamics`):**
-    -   ينمذج الجاذبات كمتجهات في فضاء خماسي الأبعاد.
-    -   تتطور حالة الجاذب بناءً على المدخلات الخارجية، الديناميكيات الداخلية، والتوتر المعلوماتي.
+1.  **النواة المتكاملة (`UDMMCore`):**
+    -   فئة واحدة تنسق جميع الوظائف الإدراكية.
+    -   **ديناميكيات الجاذب:** تنمذج حالة جاذب خماسية الأبعاد (الأنا، الاجتماعي، إلخ) تتطور بناءً على المدخلات والتوتر الداخلي.
+    -   **مدير النوايا:** يدير تسلسلًا هرميًا للأهداف من ثلاثة مستويات (بنيوي، ذاتي، رمزي).
+    -   **الذاكرة الديناميكية:** تطبق `MemoryModule` التي تعيد هيكلة "مخططاتها" بناءً على التوتر المعلوماتي (IT)، مما يسمح لها بالتعلم والتكيف.
+    -   **مغلف LLM:** يتضمن مغلفًا بسيطًا لاستدعاءات LLM (OpenAI أو echo كبديل) يمكن تكوينه عبر متغيرات البيئة.
 
-2.  **مدير النوايا الهرمي (`IntentManager`):**
-    -   يطبق تسلسلًا هرميًا للنوايا من ثلاثة مستويات (بنيوي، ذاتي، رمزي).
+2.  **جاهز للتشغيل المستقل وعبر API:**
+    -   المعمارية بأكملها موجودة في `udmm_v4_core.py`، والذي يمكن تشغيله مباشرة للمحاكاة والاختبار.
+    -   خادم FastAPI مُعد مسبقًا (`api/app.py`) يعرض النواة عبر نقاط النهاية `/ask` و `/status`.
 
-3.  **وحدة الذاكرة الديناميكية (`MemoryModule`):**
-    -   مكون أساسي جديد يحل محل الذاكرة الثابتة.
-    -   يقوم بحساب التوتر المعلوماتي (IT) بين معتقدات الوكيل السابقة واللاحقة.
-    -   بناءً على عتبة التوتر، فإنه إما يقوم "بتحديث محلي" (صقل المعرفة الحالية) أو يقترح "إعادة هيكلة" (إنشاء مخطط ذاكرة جديد).
-
-4.  **النواة المتكاملة والواجهة (`UDMMCore`, `ui_streamlit.py`):**
-    -   `UDMMCore` مركزي ينسق جميع المكونات.
-    -   واجهة مستخدم مبنية على Streamlit تسمح بالتفاعل السهل وتصور حالة الجاذب الداخلية للوكيل في الوقت الفعلي.
+3.  **واجهة مستخدم تفاعلية وتصور:**
+    -   واجهة مستخدم مبنية على Streamlit (`ui_streamlit.py`) توفر الطريقة الأساسية للتفاعل مع الوكيل، وتقدم دردشة وتصورًا فوريًا للحالة الداخلية للوكيل.
 
 ### 📂 هيكل المشروع
 
@@ -104,13 +100,12 @@ udmm-agent/
 udmm-agent/
 ├── src/udmm2/
 │   ├── api/
-│   │   └── app.py             # خادم FastAPI (اختياري)
-│   ├── memory_module.py       # وحدة الذاكرة الديناميكية الجديدة
-│   └── udmm_v4_core.py        # يحتوي على معمارية UDMM v4 بأكملها
+│   │   └── app.py          # خادم FastAPI (اختياري)
+│   └── udmm_v4_core.py     # معمارية UDMM v4 الكاملة والمتكاملة
 │
-├── ui_streamlit.py            # الواجهة التفاعلية الرئيسية
-├── requirements.txt           # المكتبات المطلوبة
-└── README.md                  # هذا الملف
+├── ui_streamlit.py         # الواجهة التفاعلية الرئيسية
+├── requirements.txt        # المكتبات المطلوبة
+└── README.md               # هذا الملف
 ```
 
 ### 🚀 خطوات التشغيل
@@ -120,8 +115,8 @@ udmm-agent/
     pip install -r requirements.txt
     ```
 
-2.  **تشغيل الواجهة التفاعلية (الطريقة الموصى بها):**
-    هذه هي الطريقة الأساسية للتفاعل مع الوكيل ورؤية حالته الديناميكية.
+2.  **تشغيل الواجهة التفاعلية (موصى به):**
+    تقوم هذه الطريقة بتشغيل واجهة دردشة على الويب تعرض الحالة الداخلية للوكيل.
     ```bash
     streamlit run ui_streamlit.py
     ```
@@ -129,17 +124,18 @@ udmm-agent/
 ### ⚙️ طرق تشغيل أخرى
 
 -   **المحاكاة المستقلة:**
-    لفهم ديناميكيات النموذج الأساسية بدون واجهة، قم بتشغيل الملف الأساسي كـ module.
+    لفهم ديناميكيات النموذج الأساسية، قم بتشغيل الملف الأساسي مباشرة كـ module.
     ```bash
     python -m src.udmm2.udmm_v4_core
     ```
-    سيقوم هذا بحفظ تصور بياني في `udmm_v4_dynamic_memory_state.png` وسجل في `udmm_v4_history.json`.
+    سيقوم هذا بحفظ تصور الحالة في `udmm_v4_state.json`.
 
 -   **خادم الـ API (للمطورين):**
     ```bash
     uvicorn src.udmm2.api.app:app --reload
     ```
+    تفاعل مع الواجهة عبر `http://127.0.0.1:8000/docs`.
 
 ### ⚠️ ملاحظات هامة
--   **نموذج معماري أولي:** استدعاء LLM هو حاليًا عنصر نائب.
--   **حالة الواجهة:** تحتفظ واجهة Streamlit بحالة الوكيل طوال مدة الجلسة. إغلاق علامة التبويب يعيد تعيين الحالة.
+-   **إعداد LLM:** لاستخدام LLM حقيقي مثل OpenAI، قم بتعيين متغيرات البيئة `LLM_PROVIDER` و `OPENAI_API_KEY`. وإلا، سيتم استخدام وضع الـ echo البسيط.
+-   **حالة الواجهة:** تحتفظ واجهة Streamlit بحالة الوكيل طوال مدة جلستك. إغلاق علامة التبويب يعيد تعيين ذاكرة الوكيل وحالته.

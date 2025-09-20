@@ -1,57 +1,68 @@
-# app.py
 import os
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# Import the new UDMM v4 Core
+import numpy as np
+import json
+
+# Correctly import from the parent directory (src/udmm2)
 from ..udmm_v4_core import UDMMCore
-from ..config import API_HOST, API_PORT
+
+class NumpyEncoder(json.JSONEncoder):
+    """ Custom encoder for numpy data types """
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.generic):
+            return obj.item()
+        return json.JSONEncoder.default(self, obj)
 
 app = FastAPI(
-    title="UDMM v4 Cognitive Agent API",
-    description="An API to interact with the UDMM v4 architecture.",
-    version="4.0.0"
+    title="UDMM v4 Final Core API",
+    description="API to interact with the integrated UDMM v4 Core, featuring dynamic memory.",
+    version="4.1.0"
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
-# Instantiate the new UDMM Core
-udmm_core = UDMMCore(dimensionality=5)
+# Initialize the core, using environment variables for LLM provider
+core = UDMMCore(
+    llm_provider=os.environ.get("LLM_PROVIDER", "echo"),
+    llm_model=os.environ.get("LLM_MODEL", "gpt-4o-mini")
+)
 
-@app.post("/ask", summary="Process user input")
-async def ask(req: Request):
+@app.post("/ask")
+async def ask(payload: dict):
     """
-    Receives user input, processes it through the full UDMM v4 core,
-    and returns the generated response.
-
-    The core logic involves:
-    - Calculating informational tension.
-    - Updating attractor and intent dynamics.
-    - Retrieving relevant memory.
-    - Building a context-rich prompt.
-    - (Placeholder) Calling an LLM to get a response.
+    Receives a question, processes it through the full UDMM core,
+    and returns the agent's response along with its internal state.
     """
-    data = await req.json()
-    user_input = data.get("question")
+    question = payload.get("question", "")
+    if not question:
+        return {"error": "Question not provided"}
 
-    if not user_input:
-        return {"error": "A 'question' field is required."}
+    response_data = core.process_input(question)
 
-    # Process the input using the new core
-    response_text = udmm_core.process_input(user_input)
+    # Use the custom encoder to handle numpy types in the response
+    return json.loads(json.dumps(response_data, cls=NumpyEncoder))
 
-    # The new core also stores detailed history. We can return parts of it.
-    last_history_entry = udmm_core.history[-1] if udmm_core.history else None
-
+@app.get("/status")
+async def status():
+    """
+    Returns the current high-level status of the UDMM agent.
+    """
     return {
-        "response": response_text,
-        "state_after_processing": last_history_entry
+        "time_step": core.time_step,
+        "system_health": core.system_health,
+        "schemas_in_memory": len(core.memory.schemas),
+        "current_attractor_state": dict(zip(core.attractor.labels, core.attractor.get_state().tolist()))
     }
 
-# The old endpoints like /teach, /status, and /simulate are deprecated
-# as the new UDMMCore has a more unified `process_input` method.
-# They can be re-added later if needed, adapted to the new architecture.
+@app.get("/")
+async def root():
+    return {"message": "UDMM v4 Core API is running. Use the /docs endpoint to see the API documentation."}

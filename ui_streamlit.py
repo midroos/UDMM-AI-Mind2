@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
-import sys
-import os
+import numpy as np
 
-# Ensure the src directory is in the path to allow importing the core
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+# Correctly import from the src directory
 from src.udmm2.udmm_v4_core import UDMMCore
 
 # --- Page Configuration ---
@@ -17,7 +15,9 @@ st.set_page_config(
 # --- Initialization ---
 # Initialize the UDMM core and chat history in the session state
 if "udmm_core" not in st.session_state:
-    st.session_state.udmm_core = UDMMCore(dimensionality=5)
+    # Use environment variables for LLM provider, defaulting to echo
+    llm_provider = os.environ.get("LLM_PROVIDER", "echo")
+    st.session_state.udmm_core = UDMMCore(dimensionality=5, llm_provider=llm_provider)
     print("Initialized new UDMMCore instance.")
 
 if "messages" not in st.session_state:
@@ -25,7 +25,7 @@ if "messages" not in st.session_state:
 
 # --- UI Layout ---
 st.title("🧠 UDMM v4 Interactive Agent")
-st.caption("An interactive chat with an agent based on the Dynamic Attractor Architecture.")
+st.caption(f"An interactive chat with the UDMM v4 agent. (Using '{st.session_state.udmm_core.llm.provider}' LLM)")
 
 # Create two columns: one for the chat, one for the internal state
 col1, col2 = st.columns([2, 1])
@@ -48,12 +48,12 @@ with col1:
         with st.chat_message("assistant"):
             with st.spinner("Agent is thinking..."):
                 # Process the input through the UDMM core
-                agent_response = st.session_state.udmm_core.process_input(prompt)
-                # The response from the placeholder is verbose, let's show it all
-                st.markdown(agent_response)
+                response_dict = st.session_state.udmm_core.process_input(prompt)
+                agent_response_text = response_dict.get("response", "Error: No response text found.")
+                st.markdown(agent_response_text)
 
         # Add agent response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": agent_response})
+        st.session_state.messages.append({"role": "assistant", "content": agent_response_text})
 
 # --- Column 2: Internal State Visualization ---
 with col2:
@@ -61,8 +61,8 @@ with col2:
     st.write("The agent's internal 'attractor state' evolves with each interaction.")
 
     # Get the current attractor state from the core
-    attractor_state = st.session_state.udmm_core.attractor_dynamics.get_attractor_state()
-    attractor_labels = st.session_state.udmm_core.attractor_dynamics.attractor_labels
+    attractor_state = st.session_state.udmm_core.attractor.get_state()
+    attractor_labels = st.session_state.udmm_core.attractor.labels
 
     # Create a DataFrame for charting
     attractor_df = pd.DataFrame({
@@ -76,4 +76,7 @@ with col2:
         st.write("Current Attractor State:")
         st.json(dict(zip(attractor_labels, attractor_state)))
         st.write("Current Intent Hierarchy:")
-        st.json({k: dict(zip(attractor_labels, v)) for k, v in st.session_state.udmm_core.intent_manager.get_intent_hierarchy().items()})
+        st.json({k: v.tolist() for k, v in st.session_state.udmm_core.intent.get_hierarchy().items()})
+        st.write("Schemas in Memory:")
+        st.write(f"{len(st.session_state.udmm_core.memory.schemas)} schemas")
+        st.json([s[0].tolist() for s in st.session_state.udmm_core.memory.schemas])
