@@ -1,0 +1,77 @@
+[
+  {
+    "time_step": 0,
+    "user_input": "What is the meaning of life?",
+    "response": "I'm processing your input via UDMM v4 with Dynamic Memory. My current attractor state is: [0.28 0.15 0.07 0.03 0.47]. Schemas in memory: 0. This is a placeholder response.",
+    "internal_tension": 0.6,
+    "memory_it": 0.0021798973960277124,
+    "attractor_state": [
+      0.28496309494884264,
+      0.1457702416183779,
+      0.07232934390706651,
+      0.02899965418110872,
+      0.4679376653446042
+    ],
+    "schemas_in_memory": 0
+  },
+  {
+    "time_step": 1,
+    "user_input": "Can you explain the Unified Dynamic Model of Mind in great detail with mathematical formulas?",
+    "response": "I'm processing your input via UDMM v4 with Dynamic Memory. My current attractor state is: [0.29 0.14 0.07 0.04 0.47]. Schemas in memory: 0. This is a placeholder response.",
+    "internal_tension": 1.0,
+    "memory_it": 0.0012928616474599886,
+    "attractor_state": [
+      0.2920084538148591,
+      0.1386969608551415,
+      0.06735593616251512,
+      0.036304729562401716,
+      0.46563391960508255
+    ],
+    "schemas_in_memory": 0
+  },
+  {
+    "time_step": 2,
+    "user_input": "How does this relate to my personal goals?",
+    "response": "I'm processing your input via UDMM v4 with Dynamic Memory. My current attractor state is: [0.3  0.14 0.07 0.04 0.45]. Schemas in memory: 0. This is a placeholder response.",
+    "internal_tension": 0.8,
+    "memory_it": 0.0010935300412342162,
+    "attractor_state": [
+      0.29522558748487654,
+      0.1365910546507383,
+      0.07216157631358666,
+      0.043669454928478166,
+      0.4523523266223203
+    ],
+    "schemas_in_memory": 0
+  },
+  {
+    "time_step": 3,
+    "user_input": "Disrupt and restructure everything you know about physics and causality.",
+    "response": "I'm processing your input via UDMM v4 with Dynamic Memory. My current attractor state is: [0.3  0.15 0.07 0.05 0.44]. Schemas in memory: 0. This is a placeholder response.",
+    "internal_tension": 1.0,
+    "memory_it": 0.001054378442382124,
+    "attractor_state": [
+      0.3017324636884528,
+      0.14616894760595395,
+      0.0669092426313561,
+      0.047953412271306305,
+      0.43723593380293096
+    ],
+    "schemas_in_memory": 0
+  },
+  {
+    "time_step": 4,
+    "user_input": "That's interesting.",
+    "response": "I'm processing your input via UDMM v4 with Dynamic Memory. My current attractor state is: [0.3  0.15 0.06 0.05 0.42]. Schemas in memory: 0. This is a placeholder response.",
+    "internal_tension": 0.2,
+    "memory_it": 0.0007365569149531525,
+    "attractor_state": [
+      0.30452874460314466,
+      0.15465914237908313,
+      0.06371369697738438,
+      0.05258855169368171,
+      0.4245098643467061
+    ],
+    "schemas_in_memory": 0
+  }
+]
