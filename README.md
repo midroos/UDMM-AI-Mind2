@@ -1,4 +1,4 @@
-# 🧠 UDMM v4: Integrated Dynamic Core
+# 🧠 UDMM v4: Gemini-Powered Agent
 
 [🇬🇧 English](#-english) | [🇦🇪 العربية](#-arabic)
 
@@ -6,23 +6,21 @@
 
 ## 🇬🇧 English
 
-This project is a Python implementation of the **UDMM v4 architecture**, a self-contained, theoretically-grounded cognitive agent. This version integrates all core components—Dynamic Attractors, a Hierarchical Intent Manager, a Dynamic Memory Module, and an LLM Wrapper—into a single, powerful script.
+This project is a Python implementation of the **UDMM v4 architecture**, a self-contained, theoretically-grounded cognitive agent powered exclusively by **Google's Gemini LLM**. This version integrates all core components—Dynamic Attractors, a Hierarchical Intent Manager, and a Dynamic Memory Module—into a single, powerful script that interacts with the Gemini API.
 
 ### 🔬 Key Architectural Features
 
-1.  **Integrated Core (`UDMMCore`):**
+1.  **Gemini-Exclusive Core (`UDMMCore`):**
     -   A single class that orchestrates all cognitive functions.
-    -   **Attractor Dynamics:** Models a 5D attractor state (Ego, Social, etc.) that evolves based on inputs and internal tension.
-    -   **Intent Manager:** Manages a three-level hierarchy of goals (Structural, Self, Symbolic).
-    -   **Dynamic Memory:** Implements a `MemoryModule` that restructures its "schemas" based on Informational Tension (IT), allowing it to learn and adapt.
-    -   **LLM Wrapper:** Includes a simple wrapper for LLM calls (OpenAI or a fallback echo) that can be configured via environment variables.
+    -   **Attractor Dynamics:** Models a 5D attractor state that evolves based on inputs and internal tension.
+    -   **Intent Manager:** Manages a three-level hierarchy of goals.
+    -   **Dynamic Memory:** Implements a `MemoryModule` that restructures its "schemas" based on Informational Tension (IT).
+    -   **Gemini LLM Wrapper:** Includes a dedicated wrapper for making API calls to the Gemini series of models.
 
-2.  **Standalone & API-Ready:**
-    -   The entire architecture is contained in `udmm_v4_core.py`, which can be run directly for simulation and testing.
-    -   A pre-configured FastAPI server (`api/app.py`) exposes the core via `/ask` and `/status` endpoints.
-
-3.  **Interactive UI & Visualization:**
-    -   A Streamlit-based UI (`ui_streamlit.py`) provides the primary way to interact with the agent, offering a real-time chat and visualization of the agent's internal state.
+2.  **Interactive UI with API Key Management:**
+    -   A Streamlit-based user interface is the primary way to interact with the agent.
+    -   It features a secure sidebar input for your Gemini API key, which is required to activate the agent.
+    -   The UI visualizes the agent's internal attractor state in real-time.
 
 ### 📂 Project Structure
 
@@ -30,7 +28,7 @@ This project is a Python implementation of the **UDMM v4 architecture**, a self-
 udmm-agent/
 ├── src/udmm2/
 │   ├── api/
-│   │   └── app.py          # Optional FastAPI server for the v4 agent
+│   │   └── app.py          # Optional FastAPI server
 │   └── udmm_v4_core.py     # The complete, integrated UDMM v4 architecture
 │
 ├── ui_streamlit.py         # The main interactive chat UI
@@ -45,54 +43,52 @@ udmm-agent/
     pip install -r requirements.txt
     ```
 
-2.  **Run the Interactive Chat UI (Recommended):**
-    This launches a web-based chat that visualizes the agent's internal state.
+2.  **Run the Interactive Chat UI:**
+    This is the only way to run the agent with full functionality.
     ```bash
     streamlit run ui_streamlit.py
     ```
 
+3.  **Enter Your API Key:**
+    -   The application will open in your web browser.
+    -   On the sidebar, find the text field labeled "Gemini API Key".
+    -   Enter your key and press Enter. The agent will initialize and be ready to chat.
+
 ### ⚙️ Other Ways to Run
 
--   **Standalone Simulation:**
-    To understand the model's core dynamics, run the core file directly as a module.
-    ```bash
-    python -m src.udmm2.udmm_v4_core
-    ```
-    This saves a state visualization to `udmm_v4_state.json`.
-
 -   **API Server (for developers):**
+    This requires setting the `GEMINI_API_KEY` as an environment variable before running.
     ```bash
+    # For Windows (PowerShell)
+    $env:GEMINI_API_KEY="your_key_here"
+    uvicorn src.udmm2.api.app:app --reload
+
+    # For Linux/macOS
+    export GEMINI_API_KEY="your_key_here"
     uvicorn src.udmm2.api.app:app --reload
     ```
-    Interact via `http://127.0.0.1:8000/docs`.
-
-### ⚠️ Important Notes
--   **LLM Configuration:** To use a real LLM like OpenAI, set the `LLM_PROVIDER` and `OPENAI_API_KEY` environment variables. Otherwise, it will use a simple echo fallback.
--   **Stateful UI:** The Streamlit UI maintains the agent's state for your session. Closing the tab resets the agent's memory and state.
 
 ---
 
 ## 🇦🇪 العربية
 
-### 🧠 UDMM v4: النواة الديناميكية المتكاملة
+### 🧠 UDMM v4: وكيل يعمل بنموذج Gemini
 
-هذا المشروع هو تطبيق بلغة بايثون لمعمارية **UDMM v4**، وهو وكيل إدراكي متكامل ومبني على أسس نظرية. هذه النسخة تدمج جميع المكونات الأساسية - الجاذبات الديناميكية، مدير النوايا الهرمي، وحدة الذاكرة الديناميكية، ومغلف LLM - في سكربت واحد قوي.
+هذا المشروع هو تطبيق بلغة بايثون لمعمارية **UDMM v4**، وهو وكيل إدراكي متكامل ومبني على أسس نظرية، يعمل حصريًا بواسطة **نموذج Gemini LLM من Google**. هذه النسخة تدمج جميع المكونات الأساسية - الجاذبات الديناميكية، مدير النوايا الهرمي، ووحدة الذاكرة الديناميكية - في سكربت واحد قوي يتفاعل مع Gemini API.
 
 ### 🔬 الميزات المعمارية الأساسية
 
-1.  **النواة المتكاملة (`UDMMCore`):**
+1.  **نواة حصرية لـ Gemini (`UDMMCore`):**
     -   فئة واحدة تنسق جميع الوظائف الإدراكية.
-    -   **ديناميكيات الجاذب:** تنمذج حالة جاذب خماسية الأبعاد (الأنا، الاجتماعي، إلخ) تتطور بناءً على المدخلات والتوتر الداخلي.
-    -   **مدير النوايا:** يدير تسلسلًا هرميًا للأهداف من ثلاثة مستويات (بنيوي، ذاتي، رمزي).
-    -   **الذاكرة الديناميكية:** تطبق `MemoryModule` التي تعيد هيكلة "مخططاتها" بناءً على التوتر المعلوماتي (IT)، مما يسمح لها بالتعلم والتكيف.
-    -   **مغلف LLM:** يتضمن مغلفًا بسيطًا لاستدعاءات LLM (OpenAI أو echo كبديل) يمكن تكوينه عبر متغيرات البيئة.
+    -   **ديناميكيات الجاذب:** تنمذج حالة جاذب خماسية الأبعاد تتطور بناءً على المدخلات والتوتر الداخلي.
+    -   **مدير النوايا:** يدير تسلسلًا هرميًا للأهداف من ثلاثة مستويات.
+    -   **الذاكرة الديناميكية:** تطبق `MemoryModule` التي تعيد هيكلة "مخططاتها" بناءً على التوتر المعلوماتي (IT).
+    -   **مغلف Gemini LLM:** يتضمن مغلفًا مخصصًا لإجراء استدعاءات API لنماذج سلسلة Gemini.
 
-2.  **جاهز للتشغيل المستقل وعبر API:**
-    -   المعمارية بأكملها موجودة في `udmm_v4_core.py`، والذي يمكن تشغيله مباشرة للمحاكاة والاختبار.
-    -   خادم FastAPI مُعد مسبقًا (`api/app.py`) يعرض النواة عبر نقاط النهاية `/ask` و `/status`.
-
-3.  **واجهة مستخدم تفاعلية وتصور:**
-    -   واجهة مستخدم مبنية على Streamlit (`ui_streamlit.py`) توفر الطريقة الأساسية للتفاعل مع الوكيل، وتقدم دردشة وتصورًا فوريًا للحالة الداخلية للوكيل.
+2.  **واجهة مستخدم تفاعلية مع إدارة مفتاح API:**
+    -   واجهة مستخدم مبنية على Streamlit هي الطريقة الأساسية للتفاعل مع الوكيل.
+    -   تتميز بإدخال آمن في الشريط الجانبي لمفتاح Gemini API الخاص بك، وهو مطلوب لتفعيل الوكيل.
+    -   تعرض الواجهة تصورًا بيانيًا لحالة الجاذب الداخلية للوكيل في الوقت الفعلي.
 
 ### 📂 هيكل المشروع
 
@@ -115,27 +111,27 @@ udmm-agent/
     pip install -r requirements.txt
     ```
 
-2.  **تشغيل الواجهة التفاعلية (موصى به):**
-    تقوم هذه الطريقة بتشغيل واجهة دردشة على الويب تعرض الحالة الداخلية للوكيل.
+2.  **تشغيل الواجهة التفاعلية:**
+    هذه هي الطريقة الوحيدة لتشغيل الوكيل بكامل وظائفه.
     ```bash
     streamlit run ui_streamlit.py
     ```
 
+3.  **إدخال مفتاح الـ API الخاص بك:**
+    -   سيتم فتح التطبيق في متصفح الويب الخاص بك.
+    -   في الشريط الجانبي، ابحث عن حقل النص المسمى "Gemini API Key".
+    -   أدخل مفتاحك واضغط على Enter. سيتم تهيئة الوكيل ويكون جاهزًا للدردشة.
+
 ### ⚙️ طرق تشغيل أخرى
 
--   **المحاكاة المستقلة:**
-    لفهم ديناميكيات النموذج الأساسية، قم بتشغيل الملف الأساسي مباشرة كـ module.
-    ```bash
-    python -m src.udmm2.udmm_v4_core
-    ```
-    سيقوم هذا بحفظ تصور الحالة في `udmm_v4_state.json`.
-
 -   **خادم الـ API (للمطورين):**
+    يتطلب هذا تعيين `GEMINI_API_KEY` كمتغير بيئة قبل التشغيل.
     ```bash
+    # لنظام Windows (PowerShell)
+    $env:GEMINI_API_KEY="your_key_here"
+    uvicorn src.udmm2.api.app:app --reload
+
+    # لنظام Linux/macOS
+    export GEMINI_API_KEY="your_key_here"
     uvicorn src.udmm2.api.app:app --reload
     ```
-    تفاعل مع الواجهة عبر `http://127.0.0.1:8000/docs`.
-
-### ⚠️ ملاحظات هامة
--   **إعداد LLM:** لاستخدام LLM حقيقي مثل OpenAI، قم بتعيين متغيرات البيئة `LLM_PROVIDER` و `OPENAI_API_KEY`. وإلا، سيتم استخدام وضع الـ echo البسيط.
--   **حالة الواجهة:** تحتفظ واجهة Streamlit بحالة الوكيل طوال مدة جلستك. إغلاق علامة التبويب يعيد تعيين ذاكرة الوكيل وحالته.

@@ -17,9 +17,9 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 app = FastAPI(
-    title="UDMM v4 Final Core API",
-    description="API to interact with the integrated UDMM v4 Core, featuring dynamic memory.",
-    version="4.1.0"
+    title="UDMM v4 Gemini Core API",
+    description="API to interact with the Gemini-exclusive UDMM v4 Core. Requires GEMINI_API_KEY.",
+    version="4.2.0"
 )
 
 app.add_middleware(
@@ -30,11 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize the core, using environment variables for LLM provider
-core = UDMMCore(
-    llm_provider=os.environ.get("LLM_PROVIDER", "echo"),
-    llm_model=os.environ.get("LLM_MODEL", "gpt-4o-mini")
-)
+# Initialize the core, sourcing the API key from environment variables.
+# The API will not function without this environment variable.
+gemini_key = os.environ.get("GEMINI_API_KEY")
+core = UDMMCore(gemini_api_key=gemini_key)
 
 @app.post("/ask")
 async def ask(payload: dict):
@@ -57,6 +56,7 @@ async def status():
     Returns the current high-level status of the UDMM agent.
     """
     return {
+        "api_key_loaded": bool(gemini_key),
         "time_step": core.time_step,
         "system_health": core.system_health,
         "schemas_in_memory": len(core.memory.schemas),
@@ -65,4 +65,7 @@ async def status():
 
 @app.get("/")
 async def root():
-    return {"message": "UDMM v4 Core API is running. Use the /docs endpoint to see the API documentation."}
+    message = "UDMM v4 Core API is running."
+    if not gemini_key:
+        message += " WARNING: GEMINI_API_KEY environment variable is not set. LLM calls will fail."
+    return {"message": message}
