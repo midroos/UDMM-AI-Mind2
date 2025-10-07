@@ -7,3 +7,5 @@ faiss-cpu
 openai
 streamlit
 python-dotenv
+numpy
+matplotlib
