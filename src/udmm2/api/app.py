@@ -28,4 +28,4 @@ async def teach(req: Request):
 
 @app.get("/status")
 async def status():
-    return {"body": {"energy": agent.body.energy, "arousal": agent.body.arousal}, "memory_count": len(agent.rag.meta)}
+    return {"body": {"energy": agent.body.energy, "arousal": agent.body.arousal}, "memory_count": len(agent.rag.meta), "simulation": agent.simulation.history}

@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, Any
 from .config import EMBEDDING_MODEL, FAISS_INDEX_PATH, FAISS_META_PATH, LLM_PROVIDER, OPENAI_MODEL, LLAMACPP_SERVER, ENV_ALLOW_LEARN
 from .memory.faiss_rag import FaissRAG
+from .memory.hybrid_simulation import HybridUDMMSimulation
 from .intent.hierarchical import HierarchicalIntentManager
 from .llm import OpenAIModel, LlamaCPPModel, EchoModel, GeminiModel
 
@@ -19,8 +20,8 @@ class BodyModel:
         return {"energy": self.energy, "arousal": self.arousal}
 
 class EmotionModel:
-    def compute_precision_gain(self, body: BodyModel) -> float:
-        gain = 1.0 + (body.arousal - 0.2) * 1.2
+    def compute_precision_gain(self, body: BodyModel, it: float) -> float:
+        gain = 1.0 + (body.arousal - 0.2) * 1.2 - (it - 0.5) * 0.5
         return max(0.5, min(2.0, gain))
 
 class EpisodicMemory:
@@ -48,6 +49,7 @@ class UDMMAgent:
     def __init__(self):
         # memory
         self.rag = FaissRAG(EMBEDDING_MODEL, index_path=FAISS_INDEX_PATH, meta_path=FAISS_META_PATH)
+        self.simulation = HybridUDMMSimulation()
         # body/emotion/intent
         self.body = BodyModel()
         self.emotion = EmotionModel()
@@ -67,6 +69,8 @@ class UDMMAgent:
         return EchoModel()
 
     def perceive_and_answer(self, user_text: str) -> Dict[str,Any]:
+        # 0. simulation step
+        self.simulation.step()
         # 1. RAG contexts
         contexts = self.rag.query(user_text, top_k=4)
         context_text = "\n".join([f"- {c['meta']['text']} -> {c['meta']['answer']} (score={c['score']:.2f})" for c in contexts]) or "لا يوجد سياق ذاكرة ذي صلة."
@@ -74,7 +78,7 @@ class UDMMAgent:
         attractors = {"survival": 0.2, "knowledge": 0.5, "social": 0.2, "self_maintenance": 0.1}
         global_intent = self.intent_mgr.compute_global_intent(attractors)
         subgoals = self.intent_mgr.decompose(global_intent)
-        precision_gain = self.emotion.compute_precision_gain(self.body)
+        precision_gain = self.emotion.compute_precision_gain(self.body, self.simulation.IT)
         # 3. build prompt (Arabic)
         prompt = f"""
 أنت وكيل معرفي حسب نموذج UDMM. استجب بالعربية.

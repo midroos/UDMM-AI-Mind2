@@ -28,6 +28,11 @@ with col1:
 with col2:
     st.subheader("حالة")
     try:
-        st.write(requests.get(f"{API}/status").json())
+        status_res = requests.get(f"{API}/status").json()
+        st.write(status_res)
+        sim_history = status_res.get("simulation", {})
+        if sim_history and len(sim_history.get("IT", [])) > 1:
+            st.subheader("محاكاة الذاكرة")
+            st.line_chart(sim_history)
     except Exception as e:
         st.error("لا يمكن الاتصال بالـ API")
