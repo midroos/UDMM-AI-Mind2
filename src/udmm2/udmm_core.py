@@ -1,7 +1,7 @@
 # udmm_core.py
 import os, json, time
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, List
 from .config import EMBEDDING_MODEL, FAISS_INDEX_PATH, FAISS_META_PATH, LLM_PROVIDER, OPENAI_MODEL, LLAMACPP_SERVER, ENV_ALLOW_LEARN
 from .memory.faiss_rag import FaissRAG
 from .intent.hierarchical import HierarchicalIntentManager
@@ -42,6 +42,106 @@ class EpisodicMemory:
         with open(self.path, "w", encoding="utf-8") as f:
             json.dump(self.episodes, f, ensure_ascii=False, indent=2)
         return e
+
+class CognitiveEquilibrium:
+    def __init__(self):
+        self.C_m = 0.5  # التوازن المعرفي
+        self.tau = 0.3  # التوتر الهدفي
+        self.gamma = 0.3  # التوتر الواقعي
+
+    def update_equilibrium(self, goal_alignment, reality_tension):
+        """تحديث C_m بناءً على τ و γ"""
+        self.tau = goal_alignment
+        self.gamma = reality_tension
+
+        if self.tau + self.gamma > 0:
+            self.C_m = self.tau / (self.tau + self.gamma)
+        else:
+            self.C_m = 0.5
+
+        return self.C_m
+
+    def get_affective_state(self):
+        """الحالة العاطفية بناءً على C_m"""
+        if self.C_m < 0.3:
+            return "قلق", "🫤"
+        elif self.C_m > 0.7:
+            return "متحمس", "🚀"
+        else:
+            return "متوازن", "😊"
+
+class EmbodiedBodyModel(BodyModel):
+    def __init__(self):
+        super().__init__()
+        self.physical_state = {
+            "posture": "واقف",  # وضعية الجسم
+            "movement": "هادئ",  # نوع الحركة
+            "expression": "محايد"  # التعبير الوجهي
+        }
+
+    def apply_embodied_action(self, action: Dict[str, Any]):
+        # تحديث الحالة الجسدية بناءً على الفعل
+        result = self.apply_action(action)
+
+        # تأثير التوازن المعرفي على التجسيد
+        C_m = action.get("C_m", 0.5)
+
+        if C_m < 0.3:
+            self.physical_state = {"posture": "منقبض", "movement": "متوتر", "expression": "قلق"}
+        elif C_m > 0.7:
+            self.physical_state = {"posture": "منفتح", "movement": "سريع", "expression": "متحمس"}
+        else:
+            self.physical_state = {"posture": "مستقيم", "movement": "انسجام", "expression": "هادئ"}
+
+        return {**result, **self.physical_state}
+
+class EmbodimentSystem:
+    def __init__(self):
+        self.embodiment_modes = {
+            "text": TextEmbodiment(),
+            "avatar": AvatarEmbodiment(),
+            "hardware": HardwareEmbodiment(),
+            "reverse": ReverseEmbodiment()
+        }
+        self.current_mode = "text"
+
+    def generate_embodied_response(self, text_response, cognitive_state, physical_state):
+        """توليد استجابة مجسدة بناءً على الحالة"""
+        embodiment = self.embodiment_modes[self.current_mode]
+
+        return embodiment.express(
+            text=text_response,
+            cognitive_state=cognitive_state,
+            physical_state=physical_state
+        )
+
+class TextEmbodiment:
+    def express(self, text, cognitive_state, physical_state):
+        """التجسيد النصي - إضافة مؤشرات عاطفية"""
+        state, emoji = cognitive_state.get_affective_state()
+
+        embodied_text = f"{emoji} *{physical_state['movement']}* {text}"
+        embodied_text += f"\n[الحالة: {state} - C_m: {cognitive_state.C_m:.2f}]"
+
+        return embodied_text
+
+class AvatarEmbodiment:
+    def express(self, text, cognitive_state, physical_state):
+        """التجسيد بالافتار - إرجاع أوامر حركة"""
+        return {
+            "text": text,
+            "animation": physical_state["movement"],
+            "expression": physical_state["expression"],
+            "voice_tone": "قلق" if cognitive_state.C_m < 0.3 else "متحمس" if cognitive_state.C_m > 0.7 else "طبيعي"
+        }
+
+class HardwareEmbodiment:
+    def express(self, text, cognitive_state, physical_state):
+        return {"error": "not implemented"}
+
+class ReverseEmbodiment:
+    def express(self, text, cognitive_state, physical_state):
+        return {"error": "not implemented"}
 
 # Agent composition
 class UDMMAgent:
@@ -104,3 +204,86 @@ class UDMMAgent:
             return {"error": "learning disabled"}
         self.rag.add(question, answer, source="user")
         return {"status": "learned", "question": question, "answer": answer}
+
+class EmbodiedUDMMAgent(UDMMAgent):
+    def __init__(self):
+        super().__init__()
+        self.cognitive_eq = CognitiveEquilibrium()
+        self.embodied_body = EmbodiedBodyModel()
+        self.embodiment_system = EmbodimentSystem()
+
+    def perceive_and_act(self, user_input: str, input_type: str = "text") -> Dict[str, Any]:
+        # 1. المعالجة الأساسية
+        basic_response = self.perceive_and_answer(user_input)
+
+        # 2. حساب التوازن المعرفي
+        goal_alignment = self._calculate_goal_alignment(user_input, basic_response["intent"])
+        reality_tension = self._calculate_reality_tension(user_input, basic_response["contexts"])
+
+        C_m = self.cognitive_eq.update_equilibrium(goal_alignment, reality_tension)
+
+        # 3. تطبيق التجسيد الجسدي
+        physical_action = {
+            "cost": 0.01,
+            "arousal_delta": 0.02,
+            "C_m": C_m
+        }
+        body_state = self.embodied_body.apply_embodied_action(physical_action)
+
+        # 4. توليد الاستجابة المجسدة
+        embodied_response = self.embodiment_system.generate_embodied_response(
+            text_response=basic_response["response"],
+            cognitive_state=self.cognitive_eq,
+            physical_state=body_state
+        )
+
+        return {
+            **basic_response,
+            "embodied_response": embodied_response,
+            "cognitive_equilibrium": {
+                "C_m": C_m,
+                "tau": self.cognitive_eq.tau,
+                "gamma": self.cognitive_eq.gamma
+            },
+            "physical_state": body_state
+        }
+
+    def _calculate_goal_alignment(self, user_input: str, intent: Dict) -> float:
+        """حساب τ - التوافق مع الأهداف الداخلية"""
+        # تحليل مدى توافق المدخلات مع أهداف الوكيل
+        goal_keywords = ["تعلم", "معرفة", "تطوير", "نمو", "فهم"]
+        alignment_score = 0.1
+
+        for keyword in goal_keywords:
+            if keyword in user_input:
+                alignment_score += 0.2
+
+        return min(alignment_score, 1.0)
+
+    def _calculate_reality_tension(self, user_input: str, contexts: List) -> float:
+        """حساب γ - التوتر مع الواقع"""
+        # تحمد مدى توافق النتائج مع التوقعات
+        tension_score = 0.1
+
+        if not contexts or contexts[0]["score"] < 0.7:
+            tension_score += 0.3  # توتر عند عدم وجود إجابات جيدة
+
+        anxiety_words = ["مشكلة", "خطأ", "صعب", "لا أعرف"]
+        for word in anxiety_words:
+            if word in user_input:
+                tension_score += 0.2
+
+        return min(tension_score, 1.0)
+
+# اختبار الوكيل المجسد
+if __name__ == '__main__':
+    agent = EmbodiedUDMMAgent()
+
+    # تفاعل مع تجسيد كامل
+    response = agent.perceive_and_act("أشعر بالقلق من المستقبل")
+    print(response["embodied_response"])
+
+    # تغيير نمط التجسيد
+    agent.embodiment_system.current_mode = "avatar"
+    avatar_response = agent.perceive_and_act("أريد تعلم شيء جديد")
+    print(avatar_response)
