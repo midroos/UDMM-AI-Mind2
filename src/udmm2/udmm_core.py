@@ -43,6 +43,70 @@ class EpisodicMemory:
             json.dump(self.episodes, f, ensure_ascii=False, indent=2)
         return e
 
+# +++ NEW: Cognitive Dynamics from "Psychic Attractor Engineering" paper +++
+class CognitiveEquilibrium:
+    """
+    Manages the core dynamic variables (β, κ, η) and cognitive synchronization (C_m)
+    inspired by the "Psychic Attractor Engineering" paper.
+    """
+    def __init__(self):
+        # β (beta): Predictive rigidity. High = stable but rigid. Low = flexible but unstable.
+        self.beta = 3.0
+        # κ (kappa): Embodied-affective coupling. High = grounded, present. Low = detached, disoriented.
+        self.kappa = 3.0
+        # η (eta): Breadth of the possible world. High = creative, open. Low = closed, stuck.
+        self.eta = 3.0
+        # C_m: Cognitive synchronization state. Result of the interplay of the vars above.
+        self.c_m = 0.7
+
+    def update_state(self, kl_divergence: float, emotional_arousal: float):
+        """ Update β, κ, η based on interaction outcomes. """
+        # High surprise (KL divergence) softens the model (lower beta)
+        self.beta = max(1.0, self.beta - kl_divergence * 0.5)
+
+        # High arousal can degrade body connection if too intense (lower kappa)
+        if emotional_arousal > 0.8:
+            self.kappa = max(1.0, self.kappa - 0.2)
+        else:
+            self.kappa = min(5.0, self.kappa + 0.1)
+
+        # Successful synchronization (low surprise) reinforces the current world breadth (eta)
+        if kl_divergence < 0.2:
+            self.eta = min(5.0, self.eta + 0.1)
+        else:
+            # Failure opens up possibilities out of necessity (higher eta)
+            self.eta = min(5.0, self.eta + kl_divergence * 0.3)
+
+        # Recalculate synchronization C_m
+        self._update_synchronization()
+
+    def _update_synchronization(self):
+        """ C_m is high when κ is strong and β, η are balanced. """
+        balance = 1.0 - abs(self.beta - self.eta) / 4.0 # 1 if equal, less if divergent
+        self.c_m = (self.kappa / 5.0) * balance
+        self.c_m = max(0.0, min(1.0, self.c_m))
+
+    def get_state(self) -> Dict[str, float]:
+        return {
+            "beta_rigidity": self.beta,
+            "kappa_embodiment": self.kappa,
+            "eta_possibility": self.eta,
+            "cognitive_sync": self.c_m
+        }
+
+    def diagnose_phase(self) -> str:
+        """ Implements the UDMM Compass diagnostic tool from the paper. """
+        if self.beta > 4.0 and self.eta < 2.0:
+            return "صلابة حرجة (CRITICAL_RIGIDITY)"
+        elif self.kappa > 4.0 and self.beta < 2.0:
+            return "فيضان شعوري (EMOTIONAL_FLOODING)"
+        elif self.eta > 4.0 and self.kappa > 4.0:
+            return "اختراق إبداعي وشيك (CREATIVE_BREAKTHROUGH_IMMINENT)"
+        elif self.c_m > 0.75:
+            return "تزامن مرتفع (HIGH_SYNC)"
+        else:
+            return "مستقر (STABLE)"
+
 # Agent composition
 class UDMMAgent:
     def __init__(self):
@@ -53,6 +117,7 @@ class UDMMAgent:
         self.emotion = EmotionModel()
         self.intent_mgr = HierarchicalIntentManager()
         self.episodic = EpisodicMemory()
+        self.cognitive_equilibrium = CognitiveEquilibrium() # ++ INTEGRATION
         # llm provider
         self.llm = self._init_llm()
 
@@ -70,34 +135,73 @@ class UDMMAgent:
         # 1. RAG contexts
         contexts = self.rag.query(user_text, top_k=4)
         context_text = "\n".join([f"- {c['meta']['text']} -> {c['meta']['answer']} (score={c['score']:.2f})" for c in contexts]) or "لا يوجد سياق ذاكرة ذي صلة."
-        # 2. intent & emotion
+
+        # 2. Get agent's internal state (body, emotion, intent, AND cognitive dynamics)
         attractors = {"survival": 0.2, "knowledge": 0.5, "social": 0.2, "self_maintenance": 0.1}
         global_intent = self.intent_mgr.compute_global_intent(attractors)
         subgoals = self.intent_mgr.decompose(global_intent)
-        precision_gain = self.emotion.compute_precision_gain(self.body)
-        # 3. build prompt (Arabic)
+        cognitive_state = self.cognitive_equilibrium.get_state()
+        cognitive_phase = self.cognitive_equilibrium.diagnose_phase()
+
+        # 3. Build prompt with the NEW extended state
         prompt = f"""
-أنت وكيل معرفي حسب نموذج UDMM. استجب بالعربية.
+أنت وكيل معرفي حسب نموذج UDMM الموسع. استجب بالعربية.
+---
 السياق من الذاكرة:
 {context_text}
 
 السؤال: "{user_text}"
-
-قصد الوكيل: {json.dumps(global_intent)}
-أهداف فرعية: {json.dumps(subgoals)}
-حالة الجسد: energy={self.body.energy:.2f}, arousal={self.body.arousal:.2f}
-دقة عاطفية: {precision_gain:.2f}
-
-أجب بإيجاز، واذا لم تعرف فاطلب التعلّم بصيغة: [TEACH_ASSIST: what is the answer to '{user_text}'?]
+---
+الحالة الداخلية للوكيل:
+- قصد الوكيل: {json.dumps(global_intent)}
+- حالة الجسد: energy={self.body.energy:.2f}, arousal={self.body.arousal:.2f}
+- **الحالة المعرفية (β, κ, η):** صلابة={cognitive_state['beta_rigidity']:.2f}, تجسيد={cognitive_state['kappa_embodiment']:.2f}, إمكانية={cognitive_state['eta_possibility']:.2f}
+- **التشخيص (بوصلة UDMM):** {cognitive_phase}
+- **التزامن المعرفي (C_m):** {cognitive_state['cognitive_sync']:.2f}
+---
+أجب بإيجاز بناءً على حالتك الداخلية. إذا لم تعرف، اطلب التعلّم بصيغة: [TEACH_ASSIST: what is the answer to '{user_text}'?]
 """
-        # temperature inversely proportional to precision
-        temp = max(0.0, 0.8 - (precision_gain - 1.0) * 0.4)
+        # 4. Dynamically adjust temperature based on cognitive state
+        base_temp = 0.5
+        eta_effect = (cognitive_state['eta_possibility'] - 3.0) * 0.15 # Higher eta -> more creative
+        beta_effect = (cognitive_state['beta_rigidity'] - 3.0) * 0.15 # Higher beta -> more rigid
+        temp = base_temp + eta_effect - beta_effect
+        temp = max(0.0, min(1.0, temp)) # Clamp temperature
+
+        # 5. Get response and update state
         llm_out = self.llm.chat(prompt, temperature=temp, max_tokens=512)
-        # record episode
+
+        # 6. UPDATE COGNITIVE STATE based on interaction outcome
+        # Proxy for KL-divergence: low RAG score = high surprise. Failure to answer = very high surprise.
+        max_score = 0
+        if contexts:
+            max_score = max(c['score'] for c in contexts) if contexts else 0
+        kl_divergence_proxy = 1.0 - max_score
+        if "[TEACH_ASSIST:" in llm_out:
+            kl_divergence_proxy = max(kl_divergence_proxy, 0.9) # Major prediction failure
+
+        self.cognitive_equilibrium.update_state(
+            kl_divergence=kl_divergence_proxy,
+            emotional_arousal=self.body.arousal
+        )
+
+        # 7. Record episode and apply energy cost
         ep = self.episodic.add(perception=user_text, action={"type": "respond"}, result={"llm_out": llm_out, "contexts": contexts})
-        # small energy cost
         self.body.apply_action({"cost": 0.01, "arousal_delta": 0.02})
-        return {"response": llm_out, "contexts": contexts, "intent": global_intent, "subgoals": subgoals, "precision_gain": precision_gain, "episode": ep}
+
+        # Re-fetch state after update for the return value
+        cognitive_state = self.cognitive_equilibrium.get_state()
+        cognitive_phase = self.cognitive_equilibrium.diagnose_phase()
+
+        return {
+            "response": llm_out,
+            "contexts": contexts,
+            "intent": global_intent,
+            "subgoals": subgoals,
+            "cognitive_state": cognitive_state,
+            "cognitive_phase": cognitive_phase,
+            "episode": ep
+        }
 
     def teach(self, question: str, answer: str):
         if not ENV_ALLOW_LEARN:
