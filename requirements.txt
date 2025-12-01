@@ -1,13 +1,19 @@
+# Main Application & Agent
+numpy
+PyInstaller
+python-dotenv
+requests
+openai
+
+# UI Frameworks
+streamlit
+# Tkinter is part of the standard library, no need to list it.
+
+# Optional API Server
 fastapi
 uvicorn[standard]
-requests
-requests
+
+# Core ML/AI libraries that the agent depends on
 sentence-transformers
 torch
 faiss-cpu
-openai
-streamlit
-python-dotenv
-numpy
-streamlit
-uvicorn[standard]

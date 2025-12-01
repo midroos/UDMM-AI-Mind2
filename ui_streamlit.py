@@ -1,25 +1,27 @@
 # ui_streamlit.py
 import streamlit as st
-import requests
 import os
-import json
 import time
 
-# Use environment variable for API endpoint, with a default
-API_URL = os.getenv("UDMM_API_URL", "http://127.0.0.1:8000")
-AGENT_ID = "streamlit_agent"
+# Import the agent directly
+from src.udmm2.agent import UDMM_Agent
+
+AGENT_ID = "standalone_streamlit_agent"
 
 st.set_page_config(layout="wide")
-st.title("🧠 الوكيل الديناميكي الكامل (UDMM + AAR)")
-st.caption("واجهة مستخدم تفاعلية لاختبار ومراقبة الوكيل الديناميكي")
+st.title("🧠 الوكيل الديناميكي الكامل (UDMM + AAR) - نسخة مستقلة")
+st.caption("واجهة مستخدم تفاعلية تعمل كتطبيق مستقل")
 
-# Initialize session state variables
+# Initialize the agent in session state if it doesn't exist
+if "agent" not in st.session_state:
+    st.session_state.agent = UDMM_Agent(AGENT_ID)
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "agent_state" not in st.session_state:
-    st.session_state.agent_state = {}
-if "last_response" not in st.session_state:
-    st.session_state.last_response = {}
+if "last_intervention" not in st.session_state:
+    st.session_state.last_intervention = False
+
+# Retrieve the agent from session state
+agent = st.session_state.agent
 
 # Main layout
 col1, col2 = st.columns([2, 1])
@@ -39,42 +41,26 @@ with col1:
             with st.chat_message("user"):
                 st.markdown(prompt)
 
-        try:
-            payload = {"message": prompt, "agent_id": AGENT_ID}
-            response = requests.post(f"{API_URL}/chat", json=payload, timeout=30)
-            response.raise_for_status()
+        # Generate response directly from the agent object
+        agent_reply, intervention_occurred = agent.generate_response(prompt)
+        st.session_state.last_intervention = intervention_occurred
 
-            data = response.json()
-            st.session_state.last_response = data
+        st.session_state.messages.append({"role": "assistant", "content": agent_reply})
 
-            agent_reply = data.get("response", "لم يتمكن الوكيل من الرد.")
-            st.session_state.messages.append({"role": "assistant", "content": agent_reply})
+        with chat_container:
+            with st.chat_message("assistant"):
+                st.markdown(agent_reply)
 
-            with chat_container:
-                with st.chat_message("assistant"):
-                    st.markdown(agent_reply)
-
-        except requests.exceptions.RequestException as e:
-            st.error(f"⚠️ خطأ في الاتصال بواجهة برمجة التطبيقات: {e}")
-            st.session_state.messages.append({"role": "assistant", "content": "لا يمكنني الاتصال بنفسي الآن."})
+        # We need to rerun to update the state display on the right
+        st.rerun()
 
 with col2:
     st.header("📊 الحالة الداخلية للوكيل")
 
-    if st.button("🔄 تحديث الحالة"):
-        try:
-            state_res = requests.get(f"{API_URL}/agent/{AGENT_ID}/state", timeout=10)
-            state_res.raise_for_status()
-            st.session_state.agent_state = state_res.json()
-        except requests.exceptions.RequestException:
-            st.warning("لم يتمكن من جلب الحالة. هل الوكيل يعمل؟")
+    # The state is now always available directly from the agent object
+    state = agent.get_detailed_state()
 
-    if st.session_state.last_response:
-        st.session_state.agent_state = st.session_state.last_response.get("state", {})
-
-    if st.session_state.agent_state:
-        state = st.session_state.agent_state
-
+    if state:
         st.subheader("الجسم الرقمي")
         body_state = state.get("body", [0, 0, 0])
         st.slider("⚡ الطاقة (Energy)", 0.0, 1.0, float(body_state[0]))
@@ -95,7 +81,7 @@ with col2:
         st.info(f"**الحوض الحالي:** `{state.get('attractor', 'غير معروف')}`")
 
         # Display last intervention if any
-        if st.session_state.last_response.get("intervention_occurred", False):
+        if st.session_state.last_intervention:
             st.success("✅ تم تفعيل تدخل AAR في الجولة الأخيرة!")
 
         with st.expander("عرض الحالة الكاملة (JSON)"):
@@ -104,12 +90,8 @@ with col2:
         st.info("لم يتم استلام أي حالة من الوكيل بعد.")
 
     if st.button("🚨 إعادة تعيين الوكيل"):
-        try:
-            requests.post(f"{API_URL}/agent/{AGENT_ID}/reset", timeout=10)
-            st.session_state.messages = []
-            st.session_state.agent_state = {}
-            st.session_state.last_response = {}
-            st.success("تم إعادة تعيين الوكيل بنجاح!")
-            st.rerun()
-        except requests.exceptions.RequestException:
-            st.error("فشل في إعادة تعيين الوكيل.")
+        st.session_state.agent = UDMM_Agent(AGENT_ID)
+        st.session_state.messages = []
+        st.session_state.last_intervention = False
+        st.success("تم إعادة تعيين الوكيل بنجاح!")
+        st.rerun()
