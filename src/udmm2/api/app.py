@@ -1,31 +1,66 @@
-# app.py
-import os
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from ..udmm_core import UDMMAgent
-from ..config import API_HOST, API_PORT
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any
+import uvicorn
+import time
 
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-agent = UDMMAgent()
+# Corrected import path
+from ..agent import UDMM_Agent
 
-@app.post("/ask")
-async def ask(req: Request):
-    data = await req.json()
-    q = data.get("question")
-    if not q:
-        return {"error": "no question"}
-    return agent.perceive_and_answer(q)
+app = FastAPI(title="UDMM Dynamic Agent API", description="الوكيل الديناميكي الكامل مع UDMM + AAR")
 
-@app.post("/teach")
-async def teach(req: Request):
-    data = await req.json()
-    q = data.get("question")
-    a = data.get("answer")
-    if not q or not a:
-        return {"error": "provide question and answer"}
-    return agent.teach(q, a)
+# تخزين الوكائل النشطة
+active_agents = {}
 
-@app.get("/status")
-async def status():
-    return {"body": {"energy": agent.body.energy, "arousal": agent.body.arousal}, "memory_count": len(agent.rag.meta)}
+class AgentRequest(BaseModel):
+    message: str
+    agent_id: str = "default"
+    reset: bool = False
+
+class AgentResponse(BaseModel):
+    response: str
+    agent_id: str
+    state: Dict[str, Any]
+    intervention_occurred: bool
+
+@app.post("/chat", response_model=AgentResponse)
+async def chat_with_agent(request: AgentRequest):
+    try:
+        # إنشاء أو إعادة تعيين الوكيل
+        if request.agent_id not in active_agents or request.reset:
+            active_agents[request.agent_id] = UDMM_Agent(request.agent_id)
+
+        agent = active_agents[request.agent_id]
+
+        # توليد الرد والحصول على حالة التدخل مباشرة
+        response, intervention_occurred = agent.generate_response(request.message)
+
+        return AgentResponse(
+            response=response,
+            agent_id=request.agent_id,
+            state=agent.get_detailed_state(),
+            intervention_occurred=intervention_occurred
+        )
+
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"Error during chat: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/agent/{agent_id}/state")
+async def get_agent_state(agent_id: str):
+    if agent_id not in active_agents:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    return active_agents[agent_id].get_detailed_state()
+
+@app.post("/agent/{agent_id}/reset")
+async def reset_agent(agent_id: str):
+    active_agents[agent_id] = UDMM_Agent(agent_id)
+    return {"message": f"Agent {agent_id} reset successfully"}
+
+if __name__ == "__main__":
+    # Ensure this runs from the root of the project for correct module resolution
+    uvicorn.run("src.udmm2.api.app:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,4 +1,3 @@
-# src/udmm2/llm/gemini_impl.py
 import os
 import requests
 from .interface import LLMInterface
@@ -25,13 +24,10 @@ class GeminiModel(LLMInterface):
             resp = requests.post(self.endpoint, headers=headers, params=params, json=data, timeout=30)
             resp.raise_for_status()
             out = resp.json()
-            # Handle cases where the response might not contain candidates
             if "candidates" in out and out["candidates"]:
-                # The response can have a complex structure, so we need to check for content and parts
                 candidate = out["candidates"][0]
                 if "content" in candidate and "parts" in candidate["content"] and candidate["content"]["parts"]:
                     return candidate["content"]["parts"][0]["text"]
-            # Fallback for unexpected response structure
             return f"[GEMINI_UNEXPECTED_RESPONSE] {str(out)}"
         except requests.exceptions.RequestException as e:
             return f"[GEMINI_REQUEST_ERROR] {e}"
