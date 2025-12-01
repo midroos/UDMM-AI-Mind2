@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 requests
+requests
 sentence-transformers
 torch
 faiss-cpu
@@ -8,3 +9,5 @@ openai
 streamlit
 python-dotenv
 numpy
+streamlit
+uvicorn[standard]

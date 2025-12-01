@@ -5,7 +5,7 @@ import uvicorn
 import time
 
 # Corrected import path
-from ..udmm_core import UDMM_Agent
+from ..agent import UDMM_Agent
 
 app = FastAPI(title="UDMM Dynamic Agent API", description="الوكيل الديناميكي الكامل مع UDMM + AAR")
 
